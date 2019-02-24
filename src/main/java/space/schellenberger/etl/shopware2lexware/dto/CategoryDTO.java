@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+/**
+ * CategoryDTO
+ * @author Hendrik Schellenberger
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(using = CategoryJSONDeserializer.class)
-/**
- * @author Hendrik Schellenberger
- */
 public class CategoryDTO {
 
     private Integer id;
