@@ -3,7 +3,6 @@ package space.schellenberger.etl.shopware2lexware.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.time.LocalDateTime;
@@ -12,6 +11,8 @@ import java.util.List;
 /**
  * CategoryDTO
  * @author Hendrik Schellenberger
+ *
+ * @see <a href="https://developers.shopware.com/developers-guide/rest-api/api-resource-categories/">https://developers.shopware.com/developers-guide/rest-api/api-resource-categories/</a>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -305,12 +306,11 @@ public class CategoryDTO {
 
     @JsonIgnore
     public void mergeFromShopwareObject(CategoryDTO shopwareCategoryDTO) {
-        //see: LexwareCategoryXMLReader
         if (shopwareCategoryDTO.getId().intValue() != getId().intValue()) {
-            throw new UnsupportedOperationException(String.format("Cannot merge CategoryObjects, IDs differ! Shopware: %s vs. own: %s", shopwareCategoryDTO.getId(), getId()));
+            throw new UnsupportedOperationException(String.format("Kann CategoryDTOs nicht vereinen, IDs unterschiedlich! Shopware: %s vs. %s", shopwareCategoryDTO.getId(), getId()));
         }
         if (shopwareCategoryDTO.getAdded() == null || shopwareCategoryDTO.getChanged() == null) {
-            throw new UnsupportedOperationException(String.format("Cannot merge CategoryObjects, Given category object with id %s seems hat no added/changed dates (not in database?)", shopwareCategoryDTO.getId()));
+            throw new UnsupportedOperationException(String.format("Kann CategoryDTOs nicht vereinen: Übergebenes Objekt mit id %d hat keine added/changed Zeitstempel (nicht in Datenbank?)", shopwareCategoryDTO.getId()));
         }
         //setParentId(shopwareCategoryDTO.getParentId());
         //setName(shopwareCategoryDTO.getName());
