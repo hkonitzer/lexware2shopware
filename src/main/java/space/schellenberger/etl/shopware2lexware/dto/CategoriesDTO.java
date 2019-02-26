@@ -3,9 +3,12 @@ package space.schellenberger.etl.shopware2lexware.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import java.time.LocalDateTime;
 import java.util.List;
+
+/**
+ * @author Hendrik Schellenberger
+ * @version 2
+ */
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -38,7 +41,6 @@ public class CategoriesDTO {
         this.success = success;
     }
 
-
     @JsonIgnore
     public boolean addCategoryDTO(CategoryDTO categoryDTO) {
         if (getCategoryObject(categoryDTO.getId()) != null) {
@@ -53,6 +55,7 @@ public class CategoriesDTO {
      */
     @JsonIgnore
     public Integer getRootId() {
+        // @TODO: get attribute "type" from xml element "CATALOG_STRUCTURE" with value "root"
         for (CategoryDTO categoryDTO : getData()) {
             if (categoryDTO.getParentId() == null || categoryDTO.getParentId() == 0)
                 return categoryDTO.getId();
