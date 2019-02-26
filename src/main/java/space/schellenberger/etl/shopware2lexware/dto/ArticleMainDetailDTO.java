@@ -2,14 +2,17 @@ package space.schellenberger.etl.shopware2lexware.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * ArticleDetail DTO
+ * ArticleMainDetail DTO
  * @author Hendrik Schellenberger
+ *
+ * @see <a href="https://developers.shopware.com/developers-guide/rest-api/models/#article-detail">https://developers.shopware.com/developers-guide/rest-api/models/#article-detail</a>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ArticleDetailDTO {
+public class ArticleMainDetailDTO {
     private Integer id;
     private Integer articleId;
     private Integer unitId;
@@ -67,7 +70,7 @@ public class ArticleDetailDTO {
     }
 
     public void setNumber(String number) {
-        this.number = number;
+        this.number = number.replaceAll(" ", "_");
     }
 
     public String getSupplierNumber() {
@@ -252,5 +255,16 @@ public class ArticleDetailDTO {
 
     public void setPrices(Object prices) {
         this.prices = prices;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ArticleMainDetailDTO{");
+        sb.append("id=").append(id);
+        sb.append(", articleId=").append(articleId);
+        sb.append(", number='").append(number).append('\'');
+        sb.append(", supplierNumber='").append(supplierNumber).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

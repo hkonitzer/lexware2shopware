@@ -25,6 +25,12 @@ import space.schellenberger.etl.shopware2lexware.batch.step.article.ArticlePProc
 import space.schellenberger.etl.shopware2lexware.batch.step.article.LexwareArticleXMLReader;
 import space.schellenberger.etl.shopware2lexware.batch.step.category.LexwareCategoryXMLReader;
 import space.schellenberger.etl.shopware2lexware.dto.ArticleDTO;
+import space.schellenberger.etl.shopware2lexware.dto.ArticleSupplierDTO;
+import space.schellenberger.etl.shopware2lexware.dto.SuppliersDTO;
+import space.schellenberger.etl.shopware2lexware.services.ArticleAPIService;
+import space.schellenberger.etl.shopware2lexware.services.SupplierAPIService;
+
+import java.net.URISyntaxException;
 
 /**
  * @author Hendrik Schellenberger
@@ -43,8 +49,35 @@ public class ArticlesXML2APIConfig {
     StepBuilderFactory stepBuilderFactory;
     @Autowired
     JobLauncher jobLauncher;
-    @Autowired
-    RestTemplate restTemplate;
+
+    private final RestTemplate restTemplate;
+    private final static String GENERIC_SUPPLIER_NAME = "LEXWARE2SHOPWARE IMPORT SUPPLIER";
+    private final ArticleSupplierDTO genericSupplierDTO;
+
+    public ArticlesXML2APIConfig(@Autowired RestTemplate restTemplate) throws URISyntaxException {
+        this.restTemplate = restTemplate;
+        log.debug("Erzeuge generischen Hersteller (Supplier)");
+        SupplierAPIService supplierAPIService = new SupplierAPIService(restTemplate);
+        SuppliersDTO allKnownSuppliersDTO = supplierAPIService.getSuppliers();
+        ArticleSupplierDTO genericSupplierDTO_ = allKnownSuppliersDTO.getSupplierForName(GENERIC_SUPPLIER_NAME);
+        if (genericSupplierDTO_ == null) {
+            genericSupplierDTO_ = new ArticleSupplierDTO();
+            genericSupplierDTO_.setName(GENERIC_SUPPLIER_NAME);
+            if (!supplierAPIService.createSupplier(genericSupplierDTO_)) {
+                log.error(String.format("Kann Generischen Hersteller mit Namen '%s' nicht erzeugen!", GENERIC_SUPPLIER_NAME));
+                System.exit(1);
+            } else {
+                allKnownSuppliersDTO = supplierAPIService.getSuppliers();
+                genericSupplierDTO_ = allKnownSuppliersDTO.getSupplierForName(GENERIC_SUPPLIER_NAME);
+                log.debug(String.format("Generischer Hersteller mit Namen '%s' und id %d angelegt!", GENERIC_SUPPLIER_NAME, genericSupplierDTO_.getId()));
+            }
+        }
+        this.genericSupplierDTO = genericSupplierDTO_;
+    }
+
+    public ArticleSupplierDTO getGenericSupplierDTO() {
+        return genericSupplierDTO;
+    }
 
     @Bean
     @StepScope
@@ -55,12 +88,12 @@ public class ArticlesXML2APIConfig {
 
     @Bean
     ItemProcessor<ArticleDTO, ArticleDTO> articleItemProcessor() {
-        return new ArticlePProcessor();
+        return new ArticlePProcessor(new ArticleAPIService(restTemplate), getGenericSupplierDTO());
     }
 
     @Bean
     ItemWriter<ArticleDTO> articleItemWriter() {
-        return new Article2ShopwareAPIWriter();
+        return new Article2ShopwareAPIWriter(new ArticleAPIService(restTemplate));
     }
 
     @Bean
@@ -84,7 +117,7 @@ public class ArticlesXML2APIConfig {
 
     @Bean
     public Job readAndStoreArticlesJob() {
-        log.info("Launching Job 'readAndStoreArticlesJob'");
+        log.info("Starte Job 'readAndStoreArticlesJob'");
         return jobBuilderFactory.get("readAndStoreArticlesJob")
                 .incrementer(new RunIdIncrementer())
                 .flow(processArticlesStep(xmlArticlesReader(null), articleItemProcessor(), articleItemWriter(), stepBuilderFactory))

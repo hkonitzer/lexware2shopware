@@ -3,15 +3,13 @@ package space.schellenberger.etl.shopware2lexware.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
-
 
 /**
  * Article DTO
@@ -19,6 +17,7 @@ import java.util.StringJoiner;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonDeserialize(using = ArticleJSONDeserializer.class)
 @XStreamAlias("ARTICLE")
 public class ArticleDTO {
 
@@ -181,8 +180,10 @@ public class ArticleDTO {
 
     private Integer id;
     private Integer mainDetailId;
-    @XStreamAlias("SUPPLIER_AID")
     private Integer supplierId;
+    @XStreamAlias("SUPPLIER_AID")
+    @JsonIgnore
+    private String supplerNumberXML;
     private Integer taxId;
     private Integer priceGroupId;
     private Integer filterGroupId;
@@ -202,7 +203,8 @@ public class ArticleDTO {
     private String template;
     private Integer mode;
 
-    private List<ArticleDetailDTO> mainDetail;
+    private ArticleMainDetailDTO mainDetail;
+    private ArticleSupplierDTO supplier;
 
     //tax
     //supplier
@@ -242,6 +244,14 @@ public class ArticleDTO {
 
     public void setSupplierId(Integer supplierId) {
         this.supplierId = supplierId;
+    }
+
+    public String getSupplerNumberXML() {
+        return supplerNumberXML;
+    }
+
+    public void setSupplerNumberXML(String supplerNumberXML) {
+        this.supplerNumberXML = supplerNumberXML;
     }
 
     public Integer getTaxId() {
@@ -393,12 +403,40 @@ public class ArticleDTO {
         this.mode = mode;
     }
 
-    public List<ArticleDetailDTO> getMainDetail() {
+    public ArticleMainDetailDTO getMainDetail() {
         return mainDetail;
     }
 
-    public void setMainDetail(List<ArticleDetailDTO> mainDetail) {
+    public void setMainDetail(ArticleMainDetailDTO mainDetail) {
         this.mainDetail = mainDetail;
+    }
+
+    public ArticleSupplierDTO getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(ArticleSupplierDTO supplier) {
+        this.supplier = supplier;
+    }
+
+    @JsonIgnore
+    public LocalDateTime getChanged() {
+        return changed;
+    }
+
+    @JsonIgnore
+    public void setChanged(LocalDateTime changed) {
+        this.changed = changed;
+    }
+
+    @JsonIgnore
+    public LocalDateTime getAdded() {
+        return added;
+    }
+
+    @JsonIgnore
+    public void setAdded(LocalDateTime added) {
+        this.added = added;
     }
 
     @JsonIgnore
@@ -409,17 +447,63 @@ public class ArticleDTO {
         return null;
     }
 
+    /**
+     * Schreibt Felder aus dem übergebenen DTO an dieses DTO, dabei wird geprüft ob ID und Artikelnummer identisch sind
+     * und das übergebene Objekt aus der Shopware DB stammt
+     * @param shopwareArticleDTO
+     */
+    @JsonIgnore
+    public void mergeFromShopwareObject(ArticleDTO shopwareArticleDTO) {
+        mergeFromShopwareObject(shopwareArticleDTO, false);
+    }
+
+    /**
+     * Schreibt Felder aus dem übergebenen DTO an dieses DTO, dabei wird geprüft ob ID und Artikelnummer identisch sind
+     * und das übergebene Objekt aus der Shopware DB stammt, sofern force übergeben wird
+     *
+     * @param shopwareArticleDTO
+     * @param force - Prüfung forcieren (true/false)
+     */
+    @JsonIgnore
+    public void mergeFromShopwareObject(ArticleDTO shopwareArticleDTO, boolean force) {
+        if (!force) {
+            if (getId() != null && shopwareArticleDTO.getId().intValue() != getId().intValue()) {
+                throw new UnsupportedOperationException(String.format("Kann ArticleDTOs nicht vereinen, IDs unterschiedlich! Shopware: %s vs. %s", shopwareArticleDTO.getId(), getId()));
+            }
+            if (!getMainDetail().getNumber().equalsIgnoreCase(shopwareArticleDTO.getMainDetail().getNumber())) {
+                throw new UnsupportedOperationException(String.format("Kann ArticleDTOs nicht vereinen, Artikelnummern (mainDetail.Number) unterschiedlich! Shopware: %s vs. %s", shopwareArticleDTO.getMainDetail().getNumber(), getMainDetail().getNumber()));
+            }
+            if (shopwareArticleDTO.getAdded() == null || shopwareArticleDTO.getChanged() == null) {
+                throw new UnsupportedOperationException(String.format("Kann ArticleDTO nicht vereinen: Übergebenes Objekt mit id %d hat keine added/changed Zeitstempel (nicht in Datenbank?)", shopwareArticleDTO.getId()));
+            }
+        }
+        // Aufpassen! Alle folgenden Felder werden immer von Shopware überschrieben!
+        setId(shopwareArticleDTO.getId());
+        setMainDetailId(shopwareArticleDTO.getMainDetailId());
+        setTaxId(shopwareArticleDTO.getTaxId());
+        setActive(shopwareArticleDTO.getActive());
+        setSupplierId(shopwareArticleDTO.getSupplierId()); //@TODO: Aktuell wird das genericSupplierDTO nicht angepasst!
+        setAdded(shopwareArticleDTO.getAdded());
+        setChanged(shopwareArticleDTO.getChanged());
+    }
+
+    @JsonIgnore
+    public boolean isInShopwareDB() {
+        return getAdded() != null;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ArticleDTO{");
-        sb.append("xmlArticleDetails=").append(xmlArticleDetails);
-        sb.append(", id=").append(id);
+        sb.append("id=").append(id);
         sb.append(", supplierId=").append(supplierId);
         sb.append(", artikelnr='").append(getArtNr()).append('\'');
         sb.append(", name='").append(getName()).append('\'');
         sb.append(", description='").append(description).append('\'');
         sb.append(", active=").append(getActive());
+        sb.append(", mainDetail=").append(getMainDetail());
         sb.append(", xmlArticlePrice=").append(xmlArticlePrice);
+        sb.append(", xmlArticleDetails=").append(xmlArticleDetails);
         sb.append('}');
         return sb.toString();
     }
