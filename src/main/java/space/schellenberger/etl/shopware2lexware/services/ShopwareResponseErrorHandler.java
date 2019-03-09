@@ -11,7 +11,7 @@ import java.net.URI;
 public class ShopwareResponseErrorHandler implements ResponseErrorHandler {
     @Override
     public void handleError(URI url, HttpMethod method, ClientHttpResponse response) throws IOException {
-        String msg = String.format("CategoryAPIService konnte API unter %s mit %s nicht abrufen - Status: %s Text: %s", url, method, response.getStatusCode(), response.getStatusText());
+        String msg = String.format("APIService konnte API unter %s mit %s nicht abrufen - Status: %s Text: %s", url, method, response.getStatusCode(), response.getStatusText());
         //log.error(msg);
         throw new IOException(msg);
     }
