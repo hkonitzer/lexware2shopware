@@ -7,12 +7,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Article DTO
+ *
  * @author Hendrik Schellenberger
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -20,6 +24,8 @@ import java.util.List;
 @JsonDeserialize(using = ArticleJSONDeserializer.class)
 @XStreamAlias("ARTICLE")
 public class ArticleDTO {
+
+    private final static Logger LOG = LoggerFactory.getLogger(ArticleDTO.class);
 
     public class ArticleDetailsXMLDTO {
 
@@ -148,7 +154,7 @@ public class ArticleDTO {
         }
 
         //@XStreamAlias("FEATURE")
-        @XStreamImplicit(itemFieldName="FEATURE")
+        @XStreamImplicit(itemFieldName = "FEATURE")
         private List<ArticleFeaturesFeatureXMLDTO> features;
 
         public List<ArticleFeaturesFeatureXMLDTO> getFeatures() {
@@ -183,7 +189,7 @@ public class ArticleDTO {
     private Integer supplierId;
     @XStreamAlias("SUPPLIER_AID")
     @JsonIgnore
-    private String supplerNumberXML;
+    private String supplierAIDFromLexware;
     private Integer taxId;
     private Integer priceGroupId;
     private Integer filterGroupId;
@@ -206,12 +212,66 @@ public class ArticleDTO {
     private ArticleMainDetailDTO mainDetail;
     private ArticleSupplierDTO supplier;
 
-    //tax
+    private class ArticleTaxDTO {
+        private Integer id;
+        private String name;
+        private String tax;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getTax() {
+            return tax;
+        }
+
+        public void setTax(String tax) {
+            this.tax = tax;
+        }
+    }
+
+    private ArticleTaxDTO tax;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private class ArticleCategoriesDTO {
+        private Long id;
+        private String name;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    private List<ArticleCategoriesDTO> categories;
+
     //supplier
     //propertyGroup
     //images
     //links
-    //categories
     //similiar
     //related
     //details
@@ -221,6 +281,12 @@ public class ArticleDTO {
     private LocalDateTime changed;
     @JsonIgnore
     private LocalDateTime added;
+
+    public ArticleDTO() {}
+
+    public ArticleDTO(Integer id) {
+        setId(id);
+    }
 
     public Integer getId() {
         return id;
@@ -246,12 +312,12 @@ public class ArticleDTO {
         this.supplierId = supplierId;
     }
 
-    public String getSupplerNumberXML() {
-        return supplerNumberXML;
+    public String getSupplierAIDFromLexware() {
+        return supplierAIDFromLexware;
     }
 
-    public void setSupplerNumberXML(String supplerNumberXML) {
-        this.supplerNumberXML = supplerNumberXML;
+    public void setSupplierAIDFromLexware(String supplierAIDFromLexware) {
+        this.supplierAIDFromLexware = supplierAIDFromLexware;
     }
 
     public Integer getTaxId() {
@@ -300,6 +366,11 @@ public class ArticleDTO {
     }
 
     public String getDescription() {
+        if (xmlArticleDetails != null) {
+            if (xmlArticleDetails.getDescriptionShort() != null) {
+                return xmlArticleDetails.getDescriptionShort();
+            }
+        }
         return description;
     }
 
@@ -419,6 +490,49 @@ public class ArticleDTO {
         this.supplier = supplier;
     }
 
+    public ArticleTaxDTO getTax() {
+        return tax;
+    }
+
+    public void setTax(ArticleTaxDTO tax) {
+        this.tax = tax;
+    }
+
+    @JsonIgnore
+    public void setTaxValue(String taxValue) {
+        getTax().setTax(taxValue);
+    }
+
+    public List<ArticleCategoriesDTO> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<ArticleCategoriesDTO> categories) {
+        this.categories = categories;
+    }
+
+    @JsonIgnore
+    public void addCategoriesForId(List<Long> categoryIds) {
+        if (getCategories() == null) {
+            setCategories(new ArrayList<>(categoryIds.size()));
+        }
+        for (Long categoryId : categoryIds) {
+            ArticleCategoriesDTO articleCategoriesDTO = new ArticleCategoriesDTO();
+            articleCategoriesDTO.setId(categoryId);
+            getCategories().add(articleCategoriesDTO);
+        }
+    }
+
+    @JsonIgnore
+    public void addCategoryForId(Long categoryId) {
+        if (getCategories() == null) {
+            setCategories(new ArrayList<ArticleCategoriesDTO>(1));
+        }
+        ArticleCategoriesDTO articleCategoriesDTO = new ArticleCategoriesDTO();
+        articleCategoriesDTO.setId(categoryId);
+        getCategories().add(articleCategoriesDTO);
+    }
+
     @JsonIgnore
     public LocalDateTime getChanged() {
         return changed;
@@ -447,9 +561,69 @@ public class ArticleDTO {
         return null;
     }
 
+    @JsonIgnore
+    public void setLexwareXMLData() {
+        if (xmlArticleFeatures != null) {
+            // Langbeschreibung
+            if (xmlArticleDetails.getDescriptionLong() != null) {
+                setDescriptionLong(xmlArticleDetails.getDescriptionLong());
+                if (LOG.isTraceEnabled())
+                    LOG.trace(String.format("Setzte Artikeldaten von Lexware für ID %s / ArtNr %s - descriptionLong"
+                            , getId(), getArtNr()));
+            }
+            // (Kurz-)Beschreibung
+            if (xmlArticleDetails.getDescriptionShort() != null) {
+                setDescription(xmlArticleDetails.getDescriptionShort());
+                if (LOG.isTraceEnabled())
+                    LOG.trace(String.format("Setzte Artikeldaten von Lexware für ID %s / ArtNr %s - description"
+                            , getId(), getArtNr()));
+            }
+            // Bestand, Gewicht
+            if (xmlArticleFeatures.getFeatures().size() > 0) {
+                if (mainDetail != null) {
+                    String stock = xmlArticleFeatures.getFeatureValue("menge_bestand");
+                    if (stock != null) {
+
+                        getMainDetail().setInStock(stock);
+                        if (LOG.isTraceEnabled())
+                            LOG.trace(String.format("Setzte Artikeldaten von Lexware für ID %s / ArtNr %s - menge_bestand [%s]"
+                                    , getId(), getArtNr(), mainDetail.getInStock()));
+                    }
+                    String weight = xmlArticleFeatures.getFeatureValue("Gewicht");
+                    if (weight != null) {
+                        getMainDetail().setWeight(weight);
+                        if (LOG.isTraceEnabled())
+                            LOG.trace(String.format("Setzte Artikeldaten von Lexware für ID %s / ArtNr %s - Gewicht [%s]"
+                                    , getId(), getArtNr(), mainDetail.getWeight()));
+                    }
+                } else {
+                    LOG.warn(String.format("Setzte Artikeldaten von Lexware für ID %s / ArtNr %s fehlgeschlagen, mainDetail DTO nicht angelegt"
+                            , getId(), getArtNr())); // warum legen wir es dann nicht jetzt an?
+                }
+            }
+        }
+        // Preise und Steuern
+        if (xmlArticlePrice.getPriceXMLDTO() != null) {
+            if (mainDetail != null) {
+                mainDetail.setPrice(xmlArticlePrice.getPriceXMLDTO().getPrice());
+                if (LOG.isTraceEnabled())
+                    LOG.trace(String.format("Setzte Preis von Lexware für ID %s / ArtNr %s - Type: %s Wert: %s"
+                            , getId(), getArtNr(), xmlArticlePrice.getPriceXMLDTO().getType(), xmlArticlePrice.getPriceXMLDTO().getPrice()));
+            } else {
+                LOG.warn(String.format("Setzte Preis von Lexware für ID %s / ArtNr %s fehlgeschlagen, mainDetail DTO nicht angelegt"
+                        , getId(), getArtNr()));
+            }
+            ArticleTaxDTO taxDTO = new ArticleTaxDTO();
+            taxDTO.setTax((xmlArticlePrice.getPriceXMLDTO().getTax() * 100) + ".00"); // ARTICLE_PRICE_DETAILS>ARTICLE_PRICE>TAX
+            setTax(taxDTO);
+        }
+
+    }
+
     /**
      * Schreibt Felder aus dem übergebenen DTO an dieses DTO, dabei wird geprüft ob ID und Artikelnummer identisch sind
      * und das übergebene Objekt aus der Shopware DB stammt
+     *
      * @param shopwareArticleDTO
      */
     @JsonIgnore
@@ -462,7 +636,7 @@ public class ArticleDTO {
      * und das übergebene Objekt aus der Shopware DB stammt, sofern force übergeben wird
      *
      * @param shopwareArticleDTO
-     * @param force - Prüfung forcieren (true/false)
+     * @param force              - Prüfung forcieren (true/false)
      */
     @JsonIgnore
     public void mergeFromShopwareObject(ArticleDTO shopwareArticleDTO, boolean force) {

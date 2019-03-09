@@ -23,8 +23,11 @@ public class ArticlePProcessor implements ItemProcessor<ArticleDTO, ArticleDTO> 
         // SETUP: MainDetail - Erzeuge Artikelnummer
         ArticleMainDetailDTO articleMainDetailDTO = new ArticleMainDetailDTO();
         articleMainDetailDTO.setNumber(item.getArtNr());
-        articleMainDetailDTO.setSupplierNumber(item.getSupplerNumberXML());
+        articleMainDetailDTO.setSupplierNumber(item.getSupplierAIDFromLexware());
         item.setMainDetail(articleMainDetailDTO);
+
+        // Setzte XML Metadaten von Lexware für Shopware (umschreiben der Felder)
+        item.setLexwareXMLData();
 
         if (item.getId() != null) // Versuche ID (sollte normalerweise nicht gesetzt sein)
             articleInShopwareDTO = articleAPIService.getArticle(item.getId());
@@ -34,7 +37,6 @@ public class ArticlePProcessor implements ItemProcessor<ArticleDTO, ArticleDTO> 
             item.mergeFromShopwareObject(articleInShopwareDTO, true);
         } else {
             // SETUP!
-             item.setTaxId(1); //@TODO: Konfigurierbar machen
             // SETUP: Supplier
             item.setSupplierId(genericSupplierDTO.getId());
             item.setSupplier(genericSupplierDTO);

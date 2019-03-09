@@ -3,6 +3,8 @@ package space.schellenberger.etl.shopware2lexware.batch.step.article;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import space.schellenberger.etl.shopware2lexware.batch.repository.Article2CategoryMappingRepository;
 import space.schellenberger.etl.shopware2lexware.dto.ArticleDTO;
 import space.schellenberger.etl.shopware2lexware.services.ArticleAPIService;
 
@@ -18,6 +20,8 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
 
     private final ArticleAPIService articleAPIService;
 
+    @Autowired Article2CategoryMappingRepository article2CategoryMappingRepository;
+
     public Article2ShopwareAPIWriter(ArticleAPIService articleAPIService) {
         this.articleAPIService = articleAPIService;
     }
@@ -26,6 +30,7 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
     public void write(List<? extends ArticleDTO> items) throws Exception {
         log.debug(String.format("Writing %d items", items.size()));
         for (ArticleDTO articleDTO : items) {
+            articleDTO.addCategoriesForId(article2CategoryMappingRepository.getCategoriesForSupplierAID(articleDTO.getMainDetail().getSupplierNumber()));
             if (articleDTO.isInShopwareDB()) {
                 if (articleAPIService.updateArticle(articleDTO)) {
                     if (log.isDebugEnabled())

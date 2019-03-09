@@ -1,8 +1,13 @@
 package space.schellenberger.etl.shopware2lexware.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ArticleMainDetail DTO
@@ -13,6 +18,61 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ArticleMainDetailDTO {
+
+    private final static Logger LOG = LoggerFactory.getLogger(ArticleMainDetailDTO.class);
+
+    private class ArticleMainDetailPricesDTO {
+        private Integer from = 1;
+        private String to = "beliebig";
+        private Float price;
+        private Float pseudoPrice = 0f;
+        private Float percent = 0f;
+
+        public ArticleMainDetailPricesDTO(Float price) {
+            setPrice(price);
+        }
+
+        public Integer getFrom() {
+            return from;
+        }
+
+        public void setFrom(Integer from) {
+            this.from = from;
+        }
+
+        public String getTo() {
+            return to;
+        }
+
+        public void setTo(String to) {
+            this.to = to;
+        }
+
+        public Float getPrice() {
+            return price;
+        }
+
+        public void setPrice(Float price) {
+            this.price = price;
+        }
+
+        public Float getPseudoPrice() {
+            return pseudoPrice;
+        }
+
+        public void setPseudoPrice(Float pseudoPrice) {
+            this.pseudoPrice = pseudoPrice;
+        }
+
+        public Float getPercent() {
+            return percent;
+        }
+
+        public void setPercent(Float percent) {
+            this.percent = percent;
+        }
+    }
+
     private Integer id;
     private Integer articleId;
     private Integer unitId;
@@ -22,7 +82,7 @@ public class ArticleMainDetailDTO {
     private Integer kind;
     private String additionalText;
     private Boolean active;
-    private Integer inStock;
+    private Long inStock = 0l;
     private Integer stockMin;
     private Boolean lastStock;
     private String weight;
@@ -39,7 +99,7 @@ public class ArticleMainDetailDTO {
     private String referenceUnit;
     private String packUnit;
     private Boolean shippingFree;
-    private Object prices;
+    private ArrayList<ArticleMainDetailPricesDTO> prices = new ArrayList<>(1);
 
     public Integer getId() {
         return id;
@@ -113,12 +173,20 @@ public class ArticleMainDetailDTO {
         this.active = active;
     }
 
-    public Integer getInStock() {
+    public Long getInStock() {
         return inStock;
     }
 
-    public void setInStock(Integer inStock) {
+    public void setInStock(Long inStock) {
         this.inStock = inStock;
+    }
+
+    public void setInStock(String inStock) {
+        try {
+            this.inStock = Math.round(Double.parseDouble(inStock)); // vermeide Kommawerte
+        } catch (NumberFormatException nex) {
+            LOG.warn(String.format("setInStock fehlgeschlagen, Wertumwandlung von %s fehlgeschlagen", inStock));
+        }
     }
 
     public Integer getStockMin() {
@@ -249,12 +317,23 @@ public class ArticleMainDetailDTO {
         this.shippingFree = shippingFree;
     }
 
-    public Object getPrices() {
+    public List<ArticleMainDetailPricesDTO> getPrices() {
         return prices;
     }
 
-    public void setPrices(Object prices) {
+    public void setPrices(ArrayList<ArticleMainDetailPricesDTO> prices) {
         this.prices = prices;
+    }
+
+    @JsonIgnore
+    public void setPrice(Float price) {
+        this.prices.clear();
+        addPrice(price);
+    }
+
+    @JsonIgnore
+    public void addPrice(Float price) {
+        getPrices().add(new ArticleMainDetailPricesDTO(price));
     }
 
     @Override
