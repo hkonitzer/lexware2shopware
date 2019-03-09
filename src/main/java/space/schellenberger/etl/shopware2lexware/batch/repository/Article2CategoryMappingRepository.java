@@ -2,7 +2,6 @@ package space.schellenberger.etl.shopware2lexware.batch.repository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import space.schellenberger.etl.shopware2lexware.dto.Article2CatalogGroupDTO;
