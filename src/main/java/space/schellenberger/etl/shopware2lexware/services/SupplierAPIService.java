@@ -25,7 +25,7 @@ public class SupplierAPIService {
 
     public SupplierAPIService(RestTemplate restTemplate_) {
         this.restTemplate = restTemplate_;
-        if (log.isDebugEnabled()) {
+        if (log.isTraceEnabled()) {
             LoggingRequestInterceptor loggingInterceptor = new LoggingRequestInterceptor();
             restTemplate.getInterceptors().add(loggingInterceptor);
         }
