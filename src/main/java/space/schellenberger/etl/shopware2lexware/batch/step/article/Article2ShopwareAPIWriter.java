@@ -31,14 +31,16 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
         log.debug(String.format("Writing %d items", items.size()));
         for (ArticleDTO articleDTO : items) {
             articleDTO.addCategoriesForId(article2CategoryMappingRepository.getCategoriesForSupplierAID(articleDTO.getMainDetail().getSupplierNumber()));
-            if (articleDTO.isInShopwareDB()) {
+            if (articleDTO.isInShopwareDB()) { // Update
                 if (articleAPIService.updateArticle(articleDTO)) {
                     if (log.isDebugEnabled())
                         log.debug(String.format("Artikel mit id %d und artnr '%s' geupdated", articleDTO.getId(), articleDTO.getArtNr()));
                 } else {
                     log.warn(String.format("Fehler beim Update von Artikel mit id %d und artnr '%s'", articleDTO.getId(), articleDTO.getArtNr()));
                 }
-            } else {
+            } else { // Neuer Artikel
+                if (articleDTO.getMainDetail().getInStock() > 0) // Alle Artikel mit Bestand werden aktiviert
+                    articleDTO.setActive(true); //@TODO: Konfigurierbar machen
                 if (articleAPIService.createArticle(articleDTO)) {
                     if (log.isDebugEnabled())
                         log.debug(String.format("Artikel mit artnr '%s' angelegt", articleDTO.getArtNr()));
