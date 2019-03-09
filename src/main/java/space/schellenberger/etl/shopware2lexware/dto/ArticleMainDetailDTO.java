@@ -130,7 +130,17 @@ public class ArticleMainDetailDTO {
     }
 
     public void setNumber(String number) {
-        this.number = number.replaceAll(" ", "_");
+        //@TODO: Baue eine Regex
+        this.number = number
+                .replaceAll(" ", "_")
+                .replaceAll("\\(","-")
+                .replaceAll("\\)", "-")
+                .replaceAll("/","-")
+                .replaceAll("ü","ue")
+                .replaceAll("ä","ae")
+                .replaceAll("ö","oe")
+                .replaceAll(",",".")
+                .replaceAll("\\+","plus");
     }
 
     public String getSupplierNumber() {
