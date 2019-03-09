@@ -17,6 +17,8 @@ public class CategoryAPIService {
 
     private static final Logger log = LoggerFactory.getLogger(CategoryAPIService.class);
 
+    private final static String API_ENDPOINT = "/api/categories/";
+
     private final RestTemplate restTemplate;
 
     public CategoryAPIService(RestTemplate restTemplate_) {
@@ -29,12 +31,12 @@ public class CategoryAPIService {
     }
 
     public CategoriesDTO getCategories() {
-        return restTemplate.getForObject("http://192.168.74.99/api/categories/", CategoriesDTO.class);
+        return restTemplate.getForObject(API_ENDPOINT, CategoriesDTO.class);
     }
 
     public CategoryDTO getCategory(Integer id) {
         ResponseEntity<CategoryDTO> entity = null;
-        entity = restTemplate.exchange("http://192.168.74.99/api/categories/" + id, HttpMethod.GET, null, CategoryDTO.class);
+        entity = restTemplate.exchange(API_ENDPOINT + id, HttpMethod.GET, null, CategoryDTO.class);
         if (entity.getStatusCode() == HttpStatus.OK) {
             return entity.getBody();
         } else {
@@ -45,13 +47,13 @@ public class CategoryAPIService {
     public boolean updateCategory(CategoryDTO categoryDTO) {
         HttpEntity<CategoryDTO> requestEntity = new HttpEntity<CategoryDTO>(categoryDTO, new HttpHeaders());
         ResponseEntity<CategoryDTO> entity = null;
-        entity = restTemplate.exchange("http://192.168.74.99/api/categories/" + categoryDTO.getId(), HttpMethod.PUT, requestEntity, CategoryDTO.class);
+        entity = restTemplate.exchange(API_ENDPOINT + categoryDTO.getId(), HttpMethod.PUT, requestEntity, CategoryDTO.class);
         return (entity.getStatusCode() == HttpStatus.OK);
     }
 
     public boolean createCategory(CategoryDTO categoryDTO) throws URISyntaxException {
         RequestEntity<CategoryDTO> requestEntity = RequestEntity
-                .post(new URI("http://192.168.74.99/api/categories/"))
+                .post(new URI(API_ENDPOINT))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(categoryDTO, CategoryDTO.class);

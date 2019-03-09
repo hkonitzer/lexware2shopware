@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import space.schellenberger.etl.shopware2lexware.dto.ArticleDTO;
-import space.schellenberger.etl.shopware2lexware.dto.CategoriesDTO;
-import space.schellenberger.etl.shopware2lexware.dto.CategoryDTO;
 import space.schellenberger.etl.shopware2lexware.utils.LoggingRequestInterceptor;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,7 +32,7 @@ public class ArticleAPIService {
 
     public ArticleDTO getArticle(int id) {
         ResponseEntity<ArticleDTO> entity = restTemplate.exchange
-                ("http://192.168.74.99" + API_ENDPOINT + id, HttpMethod.GET, null, ArticleDTO.class);
+                (API_ENDPOINT + id, HttpMethod.GET, null, ArticleDTO.class);
         if (entity.getStatusCode() == HttpStatus.OK) {
             return entity.getBody();
         } else {
@@ -42,7 +40,7 @@ public class ArticleAPIService {
         }
     }
     public ArticleDTO getArticleForNumber(String number) {
-        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl("http://192.168.74.99" + API_ENDPOINT + "/" + number)
+        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromPath(API_ENDPOINT + "/" + number)
                 .queryParam("useNumberAsId", true);
         ResponseEntity<ArticleDTO> entity = restTemplate.exchange
                 (uriComponentsBuilder.toUriString(), HttpMethod.GET, null, ArticleDTO.class);
@@ -57,13 +55,13 @@ public class ArticleAPIService {
     public boolean updateArticle(ArticleDTO articleDTO) {
         HttpEntity<ArticleDTO> requestEntity = new HttpEntity<ArticleDTO>(articleDTO, new HttpHeaders());
         ResponseEntity<ArticleDTO> entity = null;
-        entity = restTemplate.exchange("http://192.168.74.99" + API_ENDPOINT + articleDTO.getId(), HttpMethod.PUT, requestEntity, ArticleDTO.class);
+        entity = restTemplate.exchange(API_ENDPOINT + articleDTO.getId(), HttpMethod.PUT, requestEntity, ArticleDTO.class);
         return (entity.getStatusCode() == HttpStatus.OK);
     }
 
     public boolean createArticle(ArticleDTO articleDTO) throws URISyntaxException {
         RequestEntity<ArticleDTO> requestEntity = RequestEntity
-                .post(new URI("http://192.168.74.99" + API_ENDPOINT))
+                .post(new URI(API_ENDPOINT))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(articleDTO, ArticleDTO.class);

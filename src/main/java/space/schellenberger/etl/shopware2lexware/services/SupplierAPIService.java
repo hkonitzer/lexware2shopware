@@ -33,12 +33,12 @@ public class SupplierAPIService {
     }
 
     public SuppliersDTO getSuppliers() {
-        return restTemplate.getForObject("http://192.168.74.99" + API_ENDPOINT, SuppliersDTO.class);
+        return restTemplate.getForObject(API_ENDPOINT, SuppliersDTO.class);
     }
 
     public ArticleSupplierDTO getSupplier(int id) {
         ResponseEntity<ArticleSupplierDTO> entity = restTemplate.exchange
-                ("http://192.168.74.99"+ API_ENDPOINT + id, HttpMethod.GET, null, ArticleSupplierDTO.class);
+                (API_ENDPOINT + id, HttpMethod.GET, null, ArticleSupplierDTO.class);
         if (entity.getStatusCode() == HttpStatus.OK) {
             return entity.getBody();
         } else {
@@ -48,7 +48,7 @@ public class SupplierAPIService {
 
     public boolean createSupplier(ArticleSupplierDTO supplierDTO) throws URISyntaxException {
         RequestEntity<ArticleSupplierDTO> requestEntity = RequestEntity
-                .post(new URI("http://192.168.74.99" + API_ENDPOINT))
+                .post(new URI(API_ENDPOINT))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(supplierDTO, ArticleSupplierDTO.class);

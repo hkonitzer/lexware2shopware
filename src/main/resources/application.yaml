@@ -1,3 +1,8 @@
+# Lexware API Endpunkte und AUthorisierung
+rootURI: "http://192.168.74.99/"
+apiUser: "apiuser"
+apiPassword: "TKt6QxRG4NWRM1yG52LgebxF2hUQlM7QdEEzgJrv"
+# Interener Webserver, aktuell nur für Monitoring Services
 server:
   port: 8180
 management:
@@ -16,6 +21,7 @@ management:
     web:
       exposure:
         include: "*"
+# Loglevel
 logging:
   level:
     org:
@@ -27,6 +33,7 @@ logging:
     com:
       zaxxer:
         hikari: WARN
+# Spring Boot: Interene Datenbank
 spring:
   datasource:
     url: "jdbc:h2:file:./job-status-datenbank"
@@ -35,6 +42,7 @@ spring:
       hibernate:
         hbm2ddl:
           auto: "update"
+# Spring Batch: Verhindere das Jobs automatisch gestartet werden
   batch:
     job:
       enabled: false
