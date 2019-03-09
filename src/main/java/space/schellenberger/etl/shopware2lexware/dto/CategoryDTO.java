@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * CategoryDTO
@@ -47,6 +50,7 @@ public class CategoryDTO {
     private Integer articleCount;
     private List<Object> translations;
 
+    @JsonIgnore private String type; // type in Lexware
     @JsonIgnore private LocalDateTime changed;
     @JsonIgnore private LocalDateTime added;
 
@@ -216,6 +220,16 @@ public class CategoryDTO {
     }
 
     @JsonIgnore
+    public String getType() {
+        return type;
+    }
+
+    @JsonIgnore
+    public void setType(String shopwareType) {
+        this.type = shopwareType;
+    }
+
+    @JsonIgnore
     public LocalDateTime getChanged() {
         return changed;
     }
@@ -327,16 +341,12 @@ public class CategoryDTO {
 
     @Override
     public String toString() {
-        return "CategoryDTO{" +
-                "id=" + id +
-                ", parentId=" + parentId +
-                ", name='" + name + '\'' +
-                ", position=" + position +
-                ", metaTitle='" + metaTitle + '\'' +
-                ", metaKeywords='" + metaKeywords + '\'' +
-                ", metaDescription='" + metaDescription + '\'' +
-                ", active=" + active +
-                ", path='" + path + '\'' +
-                '}';
+        return new StringJoiner(", ", CategoryDTO.class.getSimpleName() + "[", "]")
+                .add("id=" + id)
+                .add("parentId=" + parentId)
+                .add("name='" + name + "'")
+                .add("active=" + active)
+                .add("shopwareType='" + type + "'")
+                .toString();
     }
 }

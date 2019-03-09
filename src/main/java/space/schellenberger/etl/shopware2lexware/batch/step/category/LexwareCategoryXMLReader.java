@@ -39,6 +39,7 @@ public class LexwareCategoryXMLReader {
         marshaller.getXStream().aliasField("GROUP_ID", CategoryDTO.class, "id");
         marshaller.getXStream().aliasField("GROUP_NAME", CategoryDTO.class, "name");
         marshaller.getXStream().aliasField("PARENT_ID", CategoryDTO.class, "parentId");
+        marshaller.getXStream().aliasAttribute(CategoryDTO.class, "type", "type");
 
         return marshaller;
     }

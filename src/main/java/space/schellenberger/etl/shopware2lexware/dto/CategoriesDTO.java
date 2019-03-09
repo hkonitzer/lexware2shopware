@@ -7,7 +7,6 @@ import java.util.List;
 
 /**
  * @author Hendrik Schellenberger
- * @version 2
  */
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -49,15 +48,30 @@ public class CategoriesDTO {
         return getData().add(categoryDTO);
     }
     /**
-     * Gets the root category id (level 0 category = parent to all other known categories)
-     * We assumee: the root category has no parent (parentid is null or zero)
-     * @return Integer - the category id of the root category
+     * Holt die Wurzel-Kategorie ID, bei Shopware ist die Level 0 Kategorie nicht zu benutzen, von daher
+     * ist die eigentliche Root-ID immer darunter anzusetzen
+     * Die Wurzel hat selbst keine  Eltern (Parent = 0 oder NULL)
+     * @return Integer - Die ID der Wurzel-Kategorie
      */
     @JsonIgnore
     public Integer getRootId() {
         // @TODO: get attribute "type" from xml element "CATALOG_STRUCTURE" with value "root"
         for (CategoryDTO categoryDTO : getData()) {
             if (categoryDTO.getParentId() == null || categoryDTO.getParentId() == 0)
+                return categoryDTO.getId();
+        }
+        return null;
+    }
+
+    /**
+     * Holt die Wurzel-Kategorie aus Lexware
+     *
+     * @return ID der Wurzel-Kategorie aus dem Lexware-Export
+     */
+    @JsonIgnore
+    public Integer getLexwareRootId() {
+        for (CategoryDTO categoryDTO : getData()) {
+            if (categoryDTO.getType() != null && categoryDTO.getType().equalsIgnoreCase("root"))
                 return categoryDTO.getId();
         }
         return null;
