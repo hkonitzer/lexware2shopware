@@ -26,6 +26,6 @@ HELP.md
 /nbdist/
 /.nb-gradle/
 
-### Interal Spring Batch DB
-DB.mv.db
-DB.trace.db
+### Interal Spring Batch DB (h2)
+*.mv.db
+*.trace.db
