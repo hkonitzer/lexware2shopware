@@ -21,9 +21,9 @@ logging:
     org:
       apache:
         catalina: WARN
-      springframework: INFO
+      springframework: WARN
     space.schellenberger.etl.shopware2lexware: DEBUG
-    space.schellenberger.etl.shopware2lexware.services.CategoryAPIService: WARN
+    space.schellenberger.etl.shopware2lexware.services: WARN
     com:
       zaxxer:
         hikari: WARN
