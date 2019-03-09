@@ -2,6 +2,7 @@ package space.schellenberger.etl.shopware2lexware.batch.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -18,6 +19,7 @@ public class LexwareErrorTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution sc, ChunkContext cc ) throws Exception {
         log.error(String.format("Lexware Import Fehler: %s", text));
+        sc.setExitStatus(ExitStatus.FAILED);
         return RepeatStatus.FINISHED;
     }
 }
