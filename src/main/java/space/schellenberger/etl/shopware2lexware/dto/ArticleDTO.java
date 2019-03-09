@@ -212,6 +212,7 @@ public class ArticleDTO {
     private ArticleMainDetailDTO mainDetail;
     private ArticleSupplierDTO supplier;
 
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private class ArticleTaxDTO {
         private Integer id;
         private String name;
