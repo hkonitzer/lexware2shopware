@@ -615,7 +615,7 @@ public class ArticleDTO {
                         , getId(), getArtNr()));
             }
             ArticleTaxDTO taxDTO = new ArticleTaxDTO();
-            taxDTO.setTax((xmlArticlePrice.getPriceXMLDTO().getTax() * 100) + ".00"); // ARTICLE_PRICE_DETAILS>ARTICLE_PRICE>TAX
+            taxDTO.setTax((xmlArticlePrice.getPriceXMLDTO().getTax() * 100) + ""); // ARTICLE_PRICE_DETAILS>ARTICLE_PRICE>TAX
             setTax(taxDTO);
         }
 
