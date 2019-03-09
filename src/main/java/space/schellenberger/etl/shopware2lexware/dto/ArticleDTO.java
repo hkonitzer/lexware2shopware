@@ -653,6 +653,8 @@ public class ArticleDTO {
             }
         }
         // Aufpassen! Alle folgenden Felder werden immer von Shopware überschrieben!
+        setPriceGroupId(shopwareArticleDTO.getPriceGroupId());
+        setPriceGroupActive(shopwareArticleDTO.getPriceGroupActive());
         setId(shopwareArticleDTO.getId());
         setMainDetailId(shopwareArticleDTO.getMainDetailId());
         setTaxId(shopwareArticleDTO.getTaxId());

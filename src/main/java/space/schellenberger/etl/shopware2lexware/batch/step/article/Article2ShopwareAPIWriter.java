@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import space.schellenberger.etl.shopware2lexware.batch.repository.Article2CategoryMappingRepository;
 import space.schellenberger.etl.shopware2lexware.dto.ArticleDTO;
 import space.schellenberger.etl.shopware2lexware.services.ArticleAPIService;
@@ -19,6 +20,9 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final ArticleAPIService articleAPIService;
+
+    @Value("${config.shopware.priceGroupId}")
+    private Integer priceGroupId;
 
     @Autowired Article2CategoryMappingRepository article2CategoryMappingRepository;
 
@@ -41,6 +45,8 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
             } else { // Neuer Artikel
                 if (articleDTO.getMainDetail().getInStock() > 0) // Alle Artikel mit Bestand werden aktiviert
                     articleDTO.setActive(true); //@TODO: Konfigurierbar machen
+                articleDTO.setPriceGroupId(priceGroupId); // Setzte Standard priceGroupId
+                articleDTO.setPriceGroupActive(true);
                 if (articleAPIService.createArticle(articleDTO)) {
                     if (log.isDebugEnabled())
                         log.debug(String.format("Artikel mit artnr '%s' angelegt", articleDTO.getArtNr()));

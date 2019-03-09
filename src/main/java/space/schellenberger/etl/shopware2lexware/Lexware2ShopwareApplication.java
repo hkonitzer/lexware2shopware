@@ -13,7 +13,6 @@ import org.springframework.context.ConfigurableApplicationContext;
  * Lexware 2 Shopware Import
  *
  * @author Hendrik Schellenberger
- * @version 1.0.0
  */
 @SpringBootApplication
 public class Lexware2ShopwareApplication {
@@ -25,7 +24,7 @@ public class Lexware2ShopwareApplication {
         ConfigurableApplicationContext ctx = app.run(args);
         JobLauncher jobLauncher = ctx.getBean(JobLauncher.class);
 
-        String lexwareImportFilename = ctx.getEnvironment().getProperty("lexwareXMLDatei");
+        String lexwareImportFilename = ctx.getEnvironment().getProperty("config.lexwareXMLDatei");
         if (lexwareImportFilename == null) {
             LOG.error("Ein Lexware Export (als XML Datei) muss angegeben werden (Parameter 'lexwareXMLDatei')");
             System.exit(2);

@@ -16,13 +16,13 @@ public class RestTemplateProvider {
 
     private static final Logger log = LoggerFactory.getLogger(CategoryAPIService.class);
 
-    @Value("${rootURI}")
+    @Value("${config.shopware.rootURI}")
     private String rootURI;
 
-    @Value("${apiUser}")
+    @Value("${config.shopware.apiUser}")
     private String apiUserName;
 
-    @Value("${apiPassword}")
+    @Value("${config.shopware.apiPassword}")
     private String apiPassword;
 
     @Bean
