@@ -117,7 +117,7 @@ public class ArticlesXML2APIConfig {
 
     @Bean
     public Job readAndStoreArticlesJob() {
-        log.info("Starte Job 'readAndStoreArticlesJob'");
+        log.info("Erzeuge Job 'readAndStoreArticlesJob'");
         return jobBuilderFactory.get("readAndStoreArticlesJob")
                 .incrementer(new RunIdIncrementer())
                 .flow(processArticlesStep(xmlArticlesReader(null), articleItemProcessor(), articleItemWriter(), stepBuilderFactory))

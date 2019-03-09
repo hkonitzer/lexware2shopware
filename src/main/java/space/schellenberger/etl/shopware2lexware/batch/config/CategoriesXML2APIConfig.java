@@ -97,7 +97,7 @@ public class CategoriesXML2APIConfig {
 
     @Bean
     public Job readAndStoreCategoriesJob() {
-        log.info("Launching Job 'readAndStoreCategoriesJob'");
+        log.info("Erzeuge Job 'readAndStoreCategoriesJob'");
         return jobBuilderFactory.get("readAndStoreCategoriesJob")
                 .incrementer(new RunIdIncrementer()).listener(listener())
                 .flow(processCategoriesStep(xmlCategoriesReader(null), categoryItemProcessor(), categoryItemWriter(), stepBuilderFactory))
