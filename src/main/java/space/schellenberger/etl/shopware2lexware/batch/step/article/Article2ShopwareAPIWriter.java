@@ -45,6 +45,7 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
             } else { // Neuer Artikel
                 if (articleDTO.getMainDetail().getInStock() > 0) // Alle Artikel mit Bestand werden aktiviert
                     articleDTO.setActive(true); //@TODO: Konfigurierbar machen
+                articleDTO.getMainDetail().setActive(true); // setze MainDetail immer aktiv
                 articleDTO.setPriceGroupId(priceGroupId); // Setzte Standard priceGroupId
                 articleDTO.setPriceGroupActive(true);
                 if (articleAPIService.createArticle(articleDTO)) {
