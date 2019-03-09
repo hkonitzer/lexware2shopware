@@ -13,7 +13,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * Lexware 2 Shopware Import
  *
  * @author Hendrik Schellenberger
- * @version 0.0.3
+ * @version 1.0.0
  */
 @SpringBootApplication
 public class Lexware2ShopwareApplication {
@@ -24,11 +24,17 @@ public class Lexware2ShopwareApplication {
         SpringApplication app = new SpringApplication(Lexware2ShopwareApplication.class);
         ConfigurableApplicationContext ctx = app.run(args);
         JobLauncher jobLauncher = ctx.getBean(JobLauncher.class);
-        LOG.info("START");
-        // Lese und Schreibe Kategorien
 
+        String lexwareImportFilename = ctx.getEnvironment().getProperty("lexwareXMLDatei");
+        if (lexwareImportFilename == null) {
+            LOG.error("Ein Lexware Export (als XML Datei) muss angegeben werden (Parameter 'lexwareXMLDatei')");
+            System.exit(2);
+        }
+        LOG.info("START mit Datei: " + lexwareImportFilename);
+
+        // Lese und Schreibe Kategorien
         JobParameters jobParametersForCategories = new JobParametersBuilder()
-                .addString("lexwareXMLDatei", "E:/temp/catalog_text.xml")
+                .addString("lexwareXMLDatei", lexwareImportFilename)
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
         Job processCategoriesJob = ctx.getBean("readAndStoreCategoriesJob", Job.class);
@@ -39,7 +45,7 @@ public class Lexware2ShopwareApplication {
 
         // Update der Artikel für Kategorien (Verlinkung)
         JobParameters jobParametersForArticles2Groups = new JobParametersBuilder()
-                .addString("lexwareXMLDatei", "E:/temp/catalog_text.xml")
+                .addString("lexwareXMLDatei", lexwareImportFilename)
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
         Job processArticles2GroupsJob = ctx.getBean("readAndUpdateArticles2GroupsJob", Job.class);
@@ -50,7 +56,7 @@ public class Lexware2ShopwareApplication {
 
         // Lese und schreibe Artikel
         JobParameters jobParametersForArticles= new JobParametersBuilder()
-                .addString("lexwareXMLDatei", "E:/temp/catalog_text.xml")
+                .addString("lexwareXMLDatei", lexwareImportFilename)
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
         Job processArticlesJob = ctx.getBean("readAndStoreArticlesJob", Job.class);

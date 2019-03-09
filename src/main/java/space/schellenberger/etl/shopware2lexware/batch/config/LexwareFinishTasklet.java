@@ -17,7 +17,7 @@ public class LexwareFinishTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution sc, ChunkContext cc ) throws Exception {
-        log.info(String.format("Lexware Import beendet: %s", text));
+        log.debug(String.format("Lexware Import beendet: %s", text));
         return RepeatStatus.FINISHED;
     }
 }

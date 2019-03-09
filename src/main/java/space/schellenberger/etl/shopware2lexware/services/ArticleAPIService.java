@@ -9,8 +9,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import space.schellenberger.etl.shopware2lexware.dto.ArticleDTO;
 import space.schellenberger.etl.shopware2lexware.utils.LoggingRequestInterceptor;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 @Service
 public class ArticleAPIService {
@@ -59,13 +57,8 @@ public class ArticleAPIService {
         return (entity.getStatusCode() == HttpStatus.OK);
     }
 
-    public boolean createArticle(ArticleDTO articleDTO) throws URISyntaxException {
-        RequestEntity<ArticleDTO> requestEntity = RequestEntity
-                .post(new URI(API_ENDPOINT))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(articleDTO, ArticleDTO.class);
-        ResponseEntity<ArticleDTO> entity = restTemplate.exchange(requestEntity, ArticleDTO.class);
+    public boolean createArticle(ArticleDTO articleDTO) {
+        ResponseEntity<ArticleDTO> entity = restTemplate.postForEntity(API_ENDPOINT, articleDTO, ArticleDTO.class);
         return (entity.getStatusCode() == HttpStatus.CREATED);
     }
 
