@@ -1,0 +1,50 @@
+# Shopware Konfiguration
+config.shopware.priceGroupId: 1
+# Shopware API Endpunkte und Authorisierung
+config.shopware.rootURI: "http://192.168.74.99/"
+config.shopware.apiUser: "apiuser"
+config.shopware.apiPassword: "TKt6QxRG4NWRM1yG52LgebxF2hUQlM7QdEEzgJrv"
+# Interener Webserver, aktuell nur für Monitoring Services
+server:
+  port: 8180
+management:
+  server:
+    port: 8180
+  metrics:
+    export:
+      simple:
+        enabled: true
+    web:
+      base:
+        path: "/actuator"
+      server:
+        auto-time-requests: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+# Loglevel
+logging:
+  level:
+    org:
+      apache:
+        catalina: WARN
+      springframework: WARN
+    space.schellenberger.etl.shopware2lexware: TRACE
+    space.schellenberger.etl.shopware2lexware.services: TRACE
+    com:
+      zaxxer:
+        hikari: WARN
+# Spring Boot: Interene Datenbank
+spring:
+  datasource:
+    url: "jdbc:h2:file:./job-status-datenbank"
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: "update"
+# Spring Batch: Verhindere das Jobs automatisch gestartet werden
+  batch:
+    job:
+      enabled: false
