@@ -1,5 +1,6 @@
 package space.schellenberger.etl.shopware2lexware.batch.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
@@ -34,7 +35,6 @@ import space.schellenberger.etl.shopware2lexware.services.CategoryAPIService;
 
 /**
  * @author Hendrik Schellenberger
- * @version 1.0.1
  */
 @EnableBatchProcessing
 @Configuration
@@ -49,8 +49,10 @@ public class CategoriesXML2APIConfig {
     StepBuilderFactory stepBuilderFactory;
     @Autowired
     JobLauncher jobLauncher;
-
-    @Autowired RestTemplate restTemplate;
+    @Autowired
+    RestTemplate restTemplate;
+    @Autowired
+    MeterRegistry meterRegistry;
 
     @Bean
     @StepScope
@@ -67,12 +69,12 @@ public class CategoriesXML2APIConfig {
 
     @Bean
     ItemProcessor<CategoryDTO, CategoryDTO> categoryItemProcessor() {
-        return new CategoryPProcessor(new CategoryAPIService(restTemplate));
+        return new CategoryPProcessor(new CategoryAPIService(meterRegistry, restTemplate));
     }
 
     @Bean
     ItemWriter<CategoryDTO> categoryItemWriter() {
-        return new Category2ShopwareAPIWriter(new CategoryAPIService(restTemplate));
+        return new Category2ShopwareAPIWriter(new CategoryAPIService(meterRegistry, restTemplate));
     }
 
     @Bean

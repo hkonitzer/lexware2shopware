@@ -1,5 +1,7 @@
 package space.schellenberger.etl.shopware2lexware.batch.step.article;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.batch.item.ItemProcessor;
 import space.schellenberger.etl.shopware2lexware.dto.ArticleDTO;
 import space.schellenberger.etl.shopware2lexware.dto.ArticleMainDetailDTO;
@@ -11,7 +13,14 @@ public class ArticlePProcessor implements ItemProcessor<ArticleDTO, ArticleDTO> 
     private final ArticleAPIService articleAPIService;
     private final ArticleSupplierDTO genericSupplierDTO;
 
-    public ArticlePProcessor(ArticleAPIService articleAPIService, ArticleSupplierDTO genericSupplierDTO) {
+    private Counter processedArticleDTOsCounter;
+
+    public ArticlePProcessor(MeterRegistry meterRegistry, ArticleAPIService articleAPIService, ArticleSupplierDTO genericSupplierDTO) {
+        this.processedArticleDTOsCounter = Counter
+                .builder("l2s.articles.processed")
+                .description("Anzahl der verarbeiteten Artikel")
+                .tags("import", "articles")
+                .register(meterRegistry);
         this.articleAPIService = articleAPIService;
         this.genericSupplierDTO = genericSupplierDTO;
     }
@@ -41,6 +50,7 @@ public class ArticlePProcessor implements ItemProcessor<ArticleDTO, ArticleDTO> 
             item.setSupplierId(genericSupplierDTO.getId());
             item.setSupplier(genericSupplierDTO);
         }
+        processedArticleDTOsCounter.increment();
         return item;
     }
 }
