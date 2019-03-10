@@ -11,8 +11,6 @@ import org.springframework.web.client.RestTemplate;
 import space.schellenberger.etl.shopware2lexware.dto.CategoriesDTO;
 import space.schellenberger.etl.shopware2lexware.dto.CategoryDTO;
 import space.schellenberger.etl.shopware2lexware.utils.LoggingRequestInterceptor;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 @Service
 public class CategoryAPIService {
@@ -64,14 +62,9 @@ public class CategoryAPIService {
         return (entity.getStatusCode() == HttpStatus.OK);
     }
 
-    public boolean createCategory(CategoryDTO categoryDTO) throws URISyntaxException {
-        RequestEntity<CategoryDTO> requestEntity = RequestEntity
-                .post(new URI(API_ENDPOINT))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(categoryDTO, CategoryDTO.class);
+    public boolean createCategory(CategoryDTO categoryDTO) {
         Timer.Sample sample = Timer.start(meterRegistry);
-        ResponseEntity<CategoryDTO> entity = restTemplate.exchange(requestEntity, CategoryDTO.class);
+        ResponseEntity<CategoryDTO> entity = restTemplate.postForEntity(API_ENDPOINT, categoryDTO, CategoryDTO.class);
         sample.stop(apiResponseTimer);
         return (entity.getStatusCode() == HttpStatus.CREATED);
     }
