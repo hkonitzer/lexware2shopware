@@ -8,13 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import space.schellenberger.etl.shopware2lexware.dto.ArticleDTO;
 import space.schellenberger.etl.shopware2lexware.dto.ArticleSupplierDTO;
 import space.schellenberger.etl.shopware2lexware.dto.SuppliersDTO;
 import space.schellenberger.etl.shopware2lexware.utils.LoggingRequestInterceptor;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 @Service
 public class SupplierAPIService {
@@ -62,14 +58,9 @@ public class SupplierAPIService {
         }
     }
 
-    public boolean createSupplier(ArticleSupplierDTO supplierDTO) throws URISyntaxException {
+    public boolean createSupplier(ArticleSupplierDTO supplierDTO) {
         Timer.Sample sample = Timer.start(meterRegistry);
-        RequestEntity<ArticleSupplierDTO> requestEntity = RequestEntity
-                .post(new URI(API_ENDPOINT))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(supplierDTO, ArticleSupplierDTO.class);
-        ResponseEntity<ArticleSupplierDTO> entity = restTemplate.exchange(requestEntity, ArticleSupplierDTO.class);
+        ResponseEntity<ArticleSupplierDTO> entity = restTemplate.postForEntity(API_ENDPOINT, supplierDTO, ArticleSupplierDTO.class);
         sample.stop(apiResponseTimer);
         return (entity.getStatusCode() == HttpStatus.CREATED);
     }
