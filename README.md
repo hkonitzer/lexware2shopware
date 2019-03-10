@@ -124,3 +124,18 @@ Folgende Paramter konfigurieren den Import selbst:
 
   Legt die sog. priceGroupId fest, die beim Anlegen von Artikeln benutzt werden soll. 
   Die Id sollte existieren, siehe dazu Tabelle ``s_core_pricegroups``
+  
+### Statistiken mit Spring Boot Acutator
+
+Beim Start wird unter den konfigurierten Ports (`management:server:port:`) Spring Boot Acutator 
+gestartet. Neben den Standard-Metriken werden eigene bereitgestellt:
+
+* l2s.articles.processed: Anzahl der verarbeiteten Artikel
+* l2s.articles.updated: Anzahl der Updates an Artikeln auf Shopware
+* l2s.articles.created: Anzahl der neu erzeugten Artikeln auf Shopware
+* l2s.articles.skipped: Anzahl der auf Grund von Fehlern übersprungenen Artikel
+* l2s.api.response: Antwortzeiten der Shopware-API (alle Requests und Antworten)
+
+Diese sind zur Laufzeit bspw. unter `http://localhost:8180/actuator/metrics/l2s.api.response` erreichbar.
+
+  

@@ -1,4 +1,5 @@
 package space.schellenberger.etl.shopware2lexware.batch.config;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
@@ -45,6 +46,8 @@ public class Articles2CatalogGroupsXML2APIConfig {
     StepBuilderFactory stepBuilderFactory;
     @Autowired
     JobLauncher jobLauncher;
+    @Autowired
+    MeterRegistry meterRegistry;
 
     private final RestTemplate restTemplate;
 
@@ -61,7 +64,7 @@ public class Articles2CatalogGroupsXML2APIConfig {
 
     @Bean
     ItemProcessor<Article2CatalogGroupDTO, Article2CatalogGroupDTO> article2CatalogGroupItemProcessor() {
-        return new Article2CatalogGroupProcessor(new ArticleAPIService(restTemplate));
+        return new Article2CatalogGroupProcessor(new ArticleAPIService(meterRegistry, restTemplate));
     }
 
     @Bean

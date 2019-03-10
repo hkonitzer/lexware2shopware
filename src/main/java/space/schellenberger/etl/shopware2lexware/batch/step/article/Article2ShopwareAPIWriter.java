@@ -1,5 +1,8 @@
 package space.schellenberger.etl.shopware2lexware.batch.step.article;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemWriter;
@@ -26,7 +29,26 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
 
     @Autowired Article2CategoryMappingRepository article2CategoryMappingRepository;
 
-    public Article2ShopwareAPIWriter(ArticleAPIService articleAPIService) {
+    private Counter updatedArticlesCounter;
+    private Counter createdArticlesCounter;
+    private Counter skippedArticlesCounter;
+
+    public Article2ShopwareAPIWriter(MeterRegistry meterRegistry, ArticleAPIService articleAPIService) {
+        this.updatedArticlesCounter = Counter
+                .builder("l2s.articles.updated")
+                .description("Anzahl der erneuerten  Artikel")
+                .tags("import", "articles")
+                .register(meterRegistry);
+        this.createdArticlesCounter = Counter
+                .builder("l2s.articles.created")
+                .description("Anzahl der neu erzeugten Artikel")
+                .tags("import", "articles")
+                .register(meterRegistry);
+        this.skippedArticlesCounter = Counter
+                .builder("l2s.articles.error")
+                .description("Anzahl der verworfernen Artikel auf Grund von Fehlern")
+                .tags("import", "articles")
+                .register(meterRegistry);
         this.articleAPIService = articleAPIService;
     }
 
@@ -37,9 +59,11 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
             articleDTO.addCategoriesForId(article2CategoryMappingRepository.getCategoriesForSupplierAID(articleDTO.getMainDetail().getSupplierNumber()));
             if (articleDTO.isInShopwareDB()) { // Update
                 if (articleAPIService.updateArticle(articleDTO)) {
+                    updatedArticlesCounter.increment();
                     if (log.isDebugEnabled())
                         log.debug(String.format("Artikel mit id %d und artnr '%s' geupdated", articleDTO.getId(), articleDTO.getArtNr()));
                 } else {
+                    skippedArticlesCounter.increment();
                     log.warn(String.format("Fehler beim Update von Artikel mit id %d und artnr '%s'", articleDTO.getId(), articleDTO.getArtNr()));
                 }
             } else { // Neuer Artikel
@@ -49,9 +73,11 @@ public class Article2ShopwareAPIWriter implements ItemWriter<ArticleDTO> {
                 articleDTO.setPriceGroupId(priceGroupId); // Setzte Standard priceGroupId
                 articleDTO.setPriceGroupActive(true);
                 if (articleAPIService.createArticle(articleDTO)) {
+                    createdArticlesCounter.increment();
                     if (log.isDebugEnabled())
                         log.debug(String.format("Artikel mit artnr '%s' angelegt", articleDTO.getArtNr()));
                 } else {
+                    skippedArticlesCounter.increment();
                     log.warn(String.format("Fehler beim Anlegen von Artikel mit artnr '%s'", articleDTO.getId(), articleDTO.getArtNr()));
                 }
             }

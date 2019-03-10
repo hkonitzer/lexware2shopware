@@ -1,4 +1,5 @@
 package space.schellenberger.etl.shopware2lexware.batch.config;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
@@ -50,14 +51,17 @@ public class ArticlesXML2APIConfig {
     @Autowired
     JobLauncher jobLauncher;
 
+    private final MeterRegistry meterRegistry;
     private final RestTemplate restTemplate;
     private final static String GENERIC_SUPPLIER_NAME = "LEXWARE2SHOPWARE IMPORT SUPPLIER";
     private final ArticleSupplierDTO genericSupplierDTO;
 
-    public ArticlesXML2APIConfig(@Autowired RestTemplate restTemplate) throws URISyntaxException {
+    public ArticlesXML2APIConfig(@Autowired MeterRegistry meterRegistry, @Autowired RestTemplate restTemplate)
+            throws URISyntaxException {
+        this.meterRegistry = meterRegistry;
         this.restTemplate = restTemplate;
         log.debug("Erzeuge generischen Hersteller (Supplier)");
-        SupplierAPIService supplierAPIService = new SupplierAPIService(restTemplate);
+        SupplierAPIService supplierAPIService = new SupplierAPIService(meterRegistry, restTemplate);
         SuppliersDTO allKnownSuppliersDTO = supplierAPIService.getSuppliers();
         ArticleSupplierDTO genericSupplierDTO_ = allKnownSuppliersDTO.getSupplierForName(GENERIC_SUPPLIER_NAME);
         if (genericSupplierDTO_ == null) {
@@ -88,12 +92,12 @@ public class ArticlesXML2APIConfig {
 
     @Bean
     ItemProcessor<ArticleDTO, ArticleDTO> articleItemProcessor() {
-        return new ArticlePProcessor(new ArticleAPIService(restTemplate), getGenericSupplierDTO());
+        return new ArticlePProcessor(meterRegistry, new ArticleAPIService(meterRegistry, restTemplate), getGenericSupplierDTO());
     }
 
     @Bean
     ItemWriter<ArticleDTO> articleItemWriter() {
-        return new Article2ShopwareAPIWriter(new ArticleAPIService(restTemplate));
+        return new Article2ShopwareAPIWriter(meterRegistry, new ArticleAPIService(meterRegistry, restTemplate));
     }
 
     @Bean
