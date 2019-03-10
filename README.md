@@ -17,6 +17,29 @@ per API zu Shopware übertragen.
 Sofern die ein Objekt bereits in Shopware existiert, wird es erneuert (Update per PATCH),
 ansonsten erzeugt (Create per POST).
 
+Da für jeden Artikel zwingend ein Hersteller benötigt wird, wird zunächst ein generischer
+Hersteller angelegt, sofern er in Shopware noch nicht existiert (Name: `LEXWARE2SHOPWARE IMPORT SUPPLIER`).
+
+
+## Ablauf
+
+Es werden drei Jobs in folgender Reihenfolge gestartet, die Batch Config findet sich immer in der Package `config`
+
+1. CategoriesXML2APIConfig
+   
+   Importiert die Kategorien. Sofern eine Kind-Kategorie vor ihrer Eltern-Kategorie
+   importiert (in Shopware angelegt) werden soll, wird die Eltern-Kategorie als
+   Platzhalter erzeugt.
+   
+2. ArticlesXML2APIConfig
+
+    Importiert die Artikeldaten.
+    
+3. Articles2CatalogGroupsXML2APIConfig
+
+    Importiert die Zuweisungen der Artikel zu den Kategorien
+    
+
 Folgende Daten werden von Lexware übernommen:
 
 ### Kategorie-Import
@@ -37,7 +60,17 @@ Ein Element:
 * GROUP_NAME: Übernahme als Name der Kategorie
 * PARENT_ID: Übernahme als Eltern-Kategorie
 
-Alle anderen Elemente werden ignoriert
+Alle anderen Elemente werden ignoriert.
+
+Da die oberste Wurzel-Kategorie in Shopware nicht für ein Frontend als Hauptkategorie (Ebene 1)
+benutzt werden kann, kann es zu Konflikten mit der ID kommen, sofern die von Lexware
+übergebene erste Wurzelkategorie die gleiche ID hat. Also bspw. beide die ID = 1.
+
+Daher ist es beim ersten Import erforderlich, die Lexware Wurzelkategorie zunächst in
+Shopware mit dem identischen Namen (darauf erfolgt die Suche beim Import) anzulegen.
+Im Beispiel oben lautet der Name "PRODUKTGRUPPEN", diese Kategorie ist in Shopware
+unter der eigentlichen Wurzelkatgorie von Shopware anzulegen. Daraufhin wird der Import
+diese ID aus Lexware in die Kategorie von Shopware umschreiben.
 
 ### Artikel-Import
 
@@ -95,10 +128,15 @@ Es gibt einzelne Ausnahmen, in den Gettern/Settern der DTOs
 
 ## Konfiguration
 
+Für den Import muss die Shopware API erreichbar sein und eine 
+Export XML-Datei angegeben werden.
+Für den API Zugriff wird zudem ein Nutzer mit entsprechenden Rechten für den Zugriff
+auf die Shopware API benötigt.
+
 Unter /resources sind alle verfügbaren Konfiguationen in der application.yaml hinterlegt.
 
 Alle Parameter können, wie bei Spring Boot üblich auch per Kommandozeile übergebgen werden, 
-bspw: ``--config.lexwareXMLDatei="E:/temp/catalog_text.xml"``
+bspw: `--config.lexwareXMLDatei="E:/temp/catalog_text.xml"`
 
 Folgende Paramter konfigurieren den Import selbst:
 

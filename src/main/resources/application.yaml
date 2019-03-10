@@ -1,9 +1,9 @@
 # Shopware Konfiguration
 config.shopware.priceGroupId: 1
 # Shopware API Endpunkte und Authorisierung
-config.shopware.rootURI: "http://192.168.74.99/"
+config.shopware.rootURI: "http://localhost"
 config.shopware.apiUser: "apiuser"
-config.shopware.apiPassword: "TKt6QxRG4NWRM1yG52LgebxF2hUQlM7QdEEzgJrv"
+config.shopware.apiPassword: "api-token"
 # Interener Webserver, aktuell nur für Monitoring Services
 server:
   port: 8180
@@ -30,8 +30,8 @@ logging:
       apache:
         catalina: WARN
       springframework: WARN
-    space.schellenberger.etl.shopware2lexware: TRACE
-    space.schellenberger.etl.shopware2lexware.services: TRACE
+    space.schellenberger.etl.shopware2lexware: INFO
+    space.schellenberger.etl.shopware2lexware.services: WARN
     com:
       zaxxer:
         hikari: WARN
